@@ -13,7 +13,7 @@ from geometry_msgs.msg import Twist
 from robot_vision_lectures.msg import SphereParams
 from geometry_msgs.msg import Quaternion
 from tf2_geometry_msgs import PointStamped
-
+from std_msgs.msg import UInt8
 
 
 sphere_params = SphereParams()
@@ -30,7 +30,7 @@ initialized = False
 received_params = False
 
 def get_sphere_params(data):
-'''gets sphere x,y,z,radius values'''
+	'''gets sphere x,y,z,radius values'''
 	global sphere_params
 	global received_params
 	global sphere_x
@@ -43,11 +43,11 @@ def get_sphere_params(data):
 	sphere_y = data.yc
 	sphere_z = data.zc
 	sphere_radius = data.radius
-	print(received_params)
+	#print(received_params)
 
 
 def get_position(data):
-'''gets linear and angular position of robot from toolpose'''
+	'''gets linear and angular position of robot from toolpose'''
 	global current_pos
 	global initialized 
 	
@@ -60,9 +60,10 @@ def get_position(data):
 	
 	initialized = True
 	
-def make_plan(linx, liny, linz, angx, angy, angz):
-'''creates plan points and appends to plan points'''
+def make_plan(linx, liny, linz, angx, angy, angz, mode):
+	'''creates plan points and appends to plan points'''
 	plan_point = Twist()
+	point_mode = UInt8()
 	
 	plan_point.linear.x = linx
 	plan_point.linear.y = liny
@@ -70,8 +71,9 @@ def make_plan(linx, liny, linz, angx, angy, angz):
 	plan_point.angular.x = angx
 	plan_point.angular.y = angy
 	plan_point.angular.z = angz
+	point_mode.data = mode
 	
-	return plan.points.append(plan_point)
+	return plan.points.append(plan_point), plan.modes.append(point_mode)
 
 	
 if __name__ == '__main__':
@@ -95,8 +97,12 @@ if __name__ == '__main__':
 	
 	#initialize flag for checking to see if plan has been created
 	planned = False
+	print(initialized and received_params and not planned)
+	print(initialized)
+	print(received_params)
+	print(not planned)
 	while not rospy.is_shutdown():
-		if initialized and received_params and not planned:
+		if True:
 			try:
 				trans = tfBuffer.lookup_transform("base","camera_color_optical_frame", rospy.Time())
 			except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
@@ -123,18 +129,21 @@ if __name__ == '__main__':
 			roll = 3.14 
 			pitch = 0
 			yaw = 1.57
-			z_offset = .05
+			z_offset = .025
 			
 			# define a plan variable
 			plan = Plan()
 			plan_point1 = Twist()
 			
 			# add points to plan
-			make_plan(current_pos[0],current_pos[1], current_pos[2], roll, pitch, yaw)
-			make_plan(x,y,z+.3, roll, pitch, yaw)
-			make_plan(x,y,z + z_offset, roll, pitch, yaw)
-			make_plan(-0.792, 0.15, 0.363, roll, pitch, yaw)
-			make_plan(-0.792, 0.15, 0.15,roll, pitch, yaw)
+			make_plan(current_pos[0],current_pos[1], current_pos[2], roll, pitch, yaw, 0)
+			make_plan(x,y,z+.3, roll, pitch, yaw,0)
+			make_plan(x,y,z + z_offset, roll, pitch, yaw,0)
+			make_plan(x,y,z + z_offset, roll, pitch, yaw,2)
+			make_plan(current_pos[0],current_pos[1], current_pos[2], roll, pitch, yaw,0)
+			make_plan(current_pos[0],current_pos[1], .025, roll, pitch, yaw,0)
+			make_plan(current_pos[0],current_pos[1], .025, roll, pitch, yaw,1)
+			make_plan(current_pos[0],current_pos[1], current_pos[2], roll, pitch, yaw,0)
 			
 			# set flag to true
 			planned = True
@@ -143,4 +152,4 @@ if __name__ == '__main__':
 			plan_pub.publish(plan)
 			
 		# wait for 0.1 seconds until the next loop and repeat
-		loop_rate.sleep()
+			loop_rate.sleep()
