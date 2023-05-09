@@ -14,6 +14,7 @@ from robot_vision_lectures.msg import SphereParams
 from geometry_msgs.msg import Quaternion
 from tf2_geometry_msgs import PointStamped
 from std_msgs.msg import UInt8
+from std_msgs.msg import Bool
 
 
 sphere_params = SphereParams()
@@ -75,6 +76,7 @@ def make_plan(linx, liny, linz, angx, angy, angz, mode):
 	point_mode.data = mode
 	
 	return plan.points.append(plan_point), plan.modes.append(point_mode)
+
 def move_callback (data):
 	global move
 	move = data.data
