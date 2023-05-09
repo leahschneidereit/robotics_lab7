@@ -85,6 +85,8 @@ if __name__ == '__main__':
 	plan_pub = rospy.Publisher('/plan', Plan, queue_size = 10)
 	# add subscriber for receiving information from driver
 	loc_sub = rospy.Subscriber('/ur5e/toolpose', Twist, get_position)
+	#subscriber for toggling move
+	move_sub = rospy.Subscriber('/Move', Bool, move_callback)
 	# set a 10Hz frequency for this loop
 	loop_rate = rospy.Rate(10)
 
@@ -102,7 +104,7 @@ if __name__ == '__main__':
 	print(received_params)
 	print(not planned)
 	while not rospy.is_shutdown():
-		if True:
+		if not move:
 			try:
 				trans = tfBuffer.lookup_transform("base","camera_color_optical_frame", rospy.Time())
 			except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
