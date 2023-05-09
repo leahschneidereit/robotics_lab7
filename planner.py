@@ -28,6 +28,7 @@ current_pos = [0] * 6
 #initialize flags
 initialized = False
 received_params = False
+move = False
 
 def get_sphere_params(data):
 	'''gets sphere x,y,z,radius values'''
@@ -74,6 +75,9 @@ def make_plan(linx, liny, linz, angx, angy, angz, mode):
 	point_mode.data = mode
 	
 	return plan.points.append(plan_point), plan.modes.append(point_mode)
+def move_callback (data):
+	global move
+	move = data.data
 
 	
 if __name__ == '__main__':
